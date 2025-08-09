@@ -92,8 +92,6 @@ class StoreRepository(private val appContext: Context) {
     suspend fun incrementCart(productId: Int) {
 
         val affected = cartDao.increment(productId, 1)
-        if (affected == 0) {
-        }
     }
 
     suspend fun decrementCart(productId: Int) {
