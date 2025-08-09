@@ -85,14 +85,21 @@ class StoreRepository(private val appContext: Context) {
             imageUrl = image,
             quantity = 1
         )
-        cartDao.upsert(cartItem)
+        cartDao.addOrIncrement(cartItem) // <-- use cartItem here
     }
 
-    suspend fun removeFromCart(productId: Int) {
-        cartDao.delete(productId)
+
+    suspend fun incrementCart(productId: Int) {
+
+        val affected = cartDao.increment(productId, 1)
+        if (affected == 0) {
+        }
     }
 
-    suspend fun clearCart() {
-        cartDao.clear()
+    suspend fun decrementCart(productId: Int) {
+        cartDao.decrementOrDelete(productId, 1)
     }
+
+    suspend fun removeFromCart(productId: Int) = cartDao.delete(productId)
+    suspend fun clearCart() = cartDao.clear()
 }

@@ -1,4 +1,4 @@
-package com.example.fakestoreecommerceapp.ui
+package com.example.fakestoreecommerceapp.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -21,6 +21,17 @@ class ProductsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _products.value = Result.Loading
             _products.value = repo.getProducts(offset, limit)
+        }
+    }
+    fun loadProductsByCategory(categoryId: Int) {
+        viewModelScope.launch {
+            _products.value = Result.Loading
+            // pass null offset/limit to fetch what the API returns by default
+            _products.value = repo.getProductsByCategory(
+                categoryId = categoryId,
+                offset = null,
+                limit = null
+            )
         }
     }
 }
