@@ -67,17 +67,20 @@ dependencies {
         implementation(libs.hilt.android)
     implementation(libs.androidx.appcompat)
     ksp(libs.hilt.compiler)
-    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation(libs.io.coil.kt.coil.compose)
 
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    implementation("androidx.navigation:navigation-compose:2.8.0")
-    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.io.coil.kt.coil.compose)
+    implementation(libs.coil.gif)   // animated GIF
+    implementation(libs.coil.svg)
     implementation(libs.paging.runtime)
     implementation(libs.paging.compose)
+
 
 
     testImplementation(libs.junit)

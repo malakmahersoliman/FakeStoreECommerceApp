@@ -16,10 +16,12 @@ class StoreRepository(private val appContext: Context) {
     private val api = RetrofitInstance.api
     private val cartDao = AppDatabase.get(appContext).cartDao()
 
-    // ==================== NETWORK METHODS (Task 1) ====================
+    // ==================== NETWORK METHODS ====================
     suspend fun getProducts(offset: Int, limit: Int): Result<List<Product>> {
         return try {
             val data = api.getProducts(offset, limit)
+                .filter { it.title.isNotBlank() && it.price >= 0 } // simple cleaning
+                .distinctBy { it.id } // avoid duplicates
             if (data.isEmpty()) Result.Empty else Result.Success(data)
         } catch (e: HttpException) {
             Result.Error("HTTP ${e.code()} ${e.message()}", e, e.code())
@@ -32,8 +34,8 @@ class StoreRepository(private val appContext: Context) {
 
     suspend fun getProductDetails(id: Int): Result<Product> {
         return try {
-            val data = api.getProductDetails(id)
-            Result.Success(data)
+            val p = api.getProductDetails(id)
+            Result.Success(p)
         } catch (e: HttpException) {
             Result.Error("HTTP ${e.code()} ${e.message()}", e, e.code())
         } catch (e: IOException) {
@@ -45,8 +47,17 @@ class StoreRepository(private val appContext: Context) {
 
     suspend fun getCategories(): Result<List<Category>> {
         return try {
+            val validExtensions = listOf(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp")
             val data = api.getCategories()
+                .filter { category ->
+                    category.name.isNotBlank() && category.image.let { url ->
+                        validExtensions.any { ext -> url.endsWith(ext, ignoreCase = true) }
+                    }
+                }
+                .distinctBy { it.id }
+
             if (data.isEmpty()) Result.Empty else Result.Success(data)
+
         } catch (e: HttpException) {
             Result.Error("HTTP ${e.code()} ${e.message()}", e, e.code())
         } catch (e: IOException) {
@@ -63,6 +74,8 @@ class StoreRepository(private val appContext: Context) {
     ): Result<List<Product>> {
         return try {
             val data = api.getProductsByCategory(categoryId, offset, limit)
+                .filter { it.title.isNotBlank() && it.price >= 0 }
+                .distinctBy { it.id }
             if (data.isEmpty()) Result.Empty else Result.Success(data)
         } catch (e: HttpException) {
             Result.Error("HTTP ${e.code()} ${e.message()}", e, e.code())
@@ -73,7 +86,7 @@ class StoreRepository(private val appContext: Context) {
         }
     }
 
-    // ==================== LOCAL CART METHODS (Task 2) ====================
+    // ==================== LOCAL CART METHODS ====================
     fun observeCart(): Flow<List<CartItem>> = cartDao.getAll()
 
     suspend fun addToCart(product: Product) {
@@ -85,13 +98,11 @@ class StoreRepository(private val appContext: Context) {
             imageUrl = image,
             quantity = 1
         )
-        cartDao.addOrIncrement(cartItem) // <-- use cartItem here
+        cartDao.addOrIncrement(cartItem)
     }
 
-
     suspend fun incrementCart(productId: Int) {
-
-        val affected = cartDao.increment(productId, 1)
+        cartDao.increment(productId, 1)
     }
 
     suspend fun decrementCart(productId: Int) {
