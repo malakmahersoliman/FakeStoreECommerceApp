@@ -4,30 +4,23 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.fakestoreecommerceapp.ui.CartScreen
-import com.example.fakestoreecommerceapp.ui.DetailsScreen
-import com.example.fakestoreecommerceapp.ui.ProductListPagingScreen
-import com.example.fakestoreecommerceapp.ui.ProductListScreen
-import com.example.fakestoreecommerceapp.viewmodel.CartViewModel
-import com.example.fakestoreecommerceapp.viewmodel.CategoriesViewModel
-import com.example.fakestoreecommerceapp.viewmodel.DetailsViewModel
-import com.example.fakestoreecommerceapp.viewmodel.ProductListPagingViewModel
-import com.example.fakestoreecommerceapp.viewmodel.ProductsViewModel
+import com.example.fakestoreecommerceapp.ui.*
+import com.example.fakestoreecommerceapp.viewmodel.*
+import com.example.fakestoreecommerceapp.ui.theme.FakeStoreECommerceAppTheme // ✅ Import your theme
 
 class MainActivity : ComponentActivity() {
-
-    // kept for non-paged list used by category route
+    // ViewModel for non-paged product listing (used in category screens)
     private val productsVM by viewModels<ProductsViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+
+            FakeStoreECommerceAppTheme {
                 val nav = rememberNavController()
 
                 NavHost(navController = nav, startDestination = "products") {
@@ -70,7 +63,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // Details
+                    // Product details
                     composable("details/{productId}") { entry ->
                         val productId = entry.arguments?.getString("productId")?.toIntOrNull()
                             ?: return@composable

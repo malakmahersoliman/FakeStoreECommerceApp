@@ -105,7 +105,7 @@ fun ProductListPagingScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(count = products.itemCount, key = { index ->
-                products.peek(index)?.id ?: index // stable key if available
+                products.peek(index)?.id ?: index
             }) { index ->
                 val product = products[index]
                 if (product != null) {
