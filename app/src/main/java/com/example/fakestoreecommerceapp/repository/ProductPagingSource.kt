@@ -17,7 +17,19 @@ class ProductPagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Product> {
         return try {
             val offset = params.key ?: 0
-            val data = api.getProducts(offset = offset, limit = pageSize)
+            val validExtensions = listOf(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp")
+            val data = api.getProducts(offset, pageSize)
+                .map { product ->
+                    product.copy(
+                        images = product.images.filter { url ->
+                            validExtensions.any { ext -> url.endsWith(ext) }
+                        }
+                    )
+                }
+                .filter { product ->
+                    product.title.isNotBlank() && product.price >= 0 && product.images.isNotEmpty()
+                }
+                .distinctBy { it.id }
 
             val nextKey = if (data.isEmpty()) null else offset + pageSize
             val prevKey = if (offset == 0) null else (offset - pageSize).coerceAtLeast(0)

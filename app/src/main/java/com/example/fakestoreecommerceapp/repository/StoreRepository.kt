@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import retrofit2.HttpException
 import java.io.IOException
 
-class StoreRepository(private val appContext: Context) {
+class StoreRepository(appContext: Context) {
 
     private val api = RetrofitInstance.api
     private val cartDao = AppDatabase.get(appContext).cartDao()
@@ -19,9 +19,19 @@ class StoreRepository(private val appContext: Context) {
     // ==================== NETWORK METHODS ====================
     suspend fun getProducts(offset: Int, limit: Int): Result<List<Product>> {
         return try {
+            val validExtensions = listOf(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp")
             val data = api.getProducts(offset, limit)
-                .filter { it.title.isNotBlank() && it.price >= 0 } // simple cleaning
-                .distinctBy { it.id } // avoid duplicates
+                .map { product ->
+                    product.copy(
+                        images = product.images.filter { url ->
+                            validExtensions.any { ext -> url.endsWith(ext) }
+                        }
+                    )
+                }
+                .filter { product ->
+                    product.title.isNotBlank() && product.price >= 0 && product.images.isNotEmpty()
+                }
+                .distinctBy { it.id }
             if (data.isEmpty()) Result.Empty else Result.Success(data)
         } catch (e: HttpException) {
             Result.Error("HTTP ${e.code()} ${e.message()}", e, e.code())
